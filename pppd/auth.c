@@ -678,7 +678,7 @@ link_terminated(int unit)
      * we delete its pid file.
      */
     if (!doing_multilink && !demand)
-	remove_pidfiles();
+	remove_pidfile(pidfilename);
 
     /*
      * If we may want to bring the link up again, transfer

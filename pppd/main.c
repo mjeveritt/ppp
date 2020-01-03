@@ -238,6 +238,7 @@ static void chld(int);
 static void toggle_debug(int);
 static void open_ccp(int);
 static void bad_signal(int);
+static void remove_pidfilenames(void);
 static void holdoff_end(void *);
 static void forget_child(int pid, int status);
 static int reap_kids(void);
@@ -837,16 +838,24 @@ create_linkpidfile(int pid)
 }
 
 /*
- * remove_pidfile - remove our pid files
+ * remove_pidfile - remove one of the 2 pidfiles (pidfilename or linkpidfile)
  */
-void remove_pidfiles(void)
+void
+remove_pidfile(filename)
+    char* filename;
 {
-    if (pidfilename[0] != 0 && unlink(pidfilename) < 0 && errno != ENOENT)
-	warn("unable to delete pid file %s: %m", pidfilename);
-    pidfilename[0] = 0;
-    if (linkpidfile[0] != 0 && unlink(linkpidfile) < 0 && errno != ENOENT)
-	warn("unable to delete pid file %s: %m", linkpidfile);
-    linkpidfile[0] = 0;
+    if (filename[0] != 0 && unlink(filename) < 0 && errno != ENOENT)
+	warn("unable to delete pid file %s: %m", filename);
+    filename[0] = 0;
+}
+
+/*
+ * remove_pidfiles - remove our pid files
+ */
+static void remove_pidfiles()
+{
+    remove_pidfile(pidfilename);
+    remove_pidfile(linkpidfile);
 }
 
 /*
