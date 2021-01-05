@@ -325,6 +325,10 @@ option_t general_options[] = {
       "Metric to use for the default route (Linux only; -1 for default behavior)",
       OPT_PRIV|OPT_LLIMIT|OPT_INITONLY, NULL, 0, -1 },
 
+    { "defaultmetric", o_int, &dfl_route_metric,
+      "Old (deprecated) option for default route metric (Linux only; -1 for default behavior)",
+      OPT_PRIV|OPT_LLIMIT|OPT_INITONLY, NULL, 0, -1 },
+
     { "ip-up-script", o_string, path_ipup,
       "Set pathname of ip-up script",
       OPT_PRIV|OPT_STATIC, NULL, MAXPATHLEN },
