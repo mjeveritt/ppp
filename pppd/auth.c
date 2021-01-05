@@ -294,7 +294,7 @@ static int  scan_authfile(FILE *, char *, char *, char *,
 			  struct wordlist **, struct wordlist **,
 			  char *, int);
 static void free_wordlist (struct wordlist *);
-static void auth_script (char *);
+static void auth_script (char *, int);
 static void auth_script_done (void *);
 static void set_allowed_addrs (int, struct wordlist *, struct wordlist *);
 static int  some_ip_ok (struct wordlist *);
@@ -732,7 +732,7 @@ link_down(int unit)
 	if (auth_script_state == s_up && auth_script_pid == 0) {
 	    update_link_stats(unit);
 	    auth_script_state = s_down;
-	    auth_script(_PATH_AUTHDOWN);
+	    auth_script(_PATH_AUTHDOWN, 0);
 	}
     }
     if (!doing_multilink) {
@@ -881,7 +881,7 @@ network_phase(int unit)
 	auth_state = s_up;
 	if (auth_script_state == s_down && auth_script_pid == 0) {
 	    auth_script_state = s_up;
-	    auth_script(_PATH_AUTHUP);
+	    auth_script(_PATH_AUTHUP, 0);
 	}
     }
 
@@ -979,6 +979,7 @@ auth_peer_fail(int unit, int protocol)
      * Authentication failure: take the link down
      */
     status = EXIT_PEER_AUTH_FAILED;
+    auth_script(_PATH_AUTHFAIL, 1);
     lcp_close(unit, "Authentication failed");
 }
 
@@ -1054,6 +1055,7 @@ auth_withpeer_fail(int unit, int protocol)
      * authentication secrets.
      */
     status = EXIT_AUTH_TOPEER_FAILED;
+    auth_script(_PATH_AUTHFAIL, 1);
     lcp_close(unit, "Failed to authenticate ourselves to peer");
 }
 
@@ -1285,6 +1287,8 @@ auth_check_options(void)
        the user and don't use our_name */
     if (user[0] == 0 && !explicit_user)
 	strlcpy(user, our_name, sizeof(user));
+
+    script_setenv("LOCALNAME", user, 0);
 
     /*
      * If we have a default route, require the peer to authenticate
@@ -2345,13 +2349,13 @@ auth_script_done(void *arg)
     case s_up:
 	if (auth_state == s_down) {
 	    auth_script_state = s_down;
-	    auth_script(_PATH_AUTHDOWN);
+	    auth_script(_PATH_AUTHDOWN, 0);
 	}
 	break;
     case s_down:
 	if (auth_state == s_up) {
 	    auth_script_state = s_up;
-	    auth_script(_PATH_AUTHUP);
+	    auth_script(_PATH_AUTHUP, 0);
 	}
 	break;
     }
@@ -2362,7 +2366,7 @@ auth_script_done(void *arg)
  * interface-name peer-name real-user tty speed
  */
 static void
-auth_script(char *script)
+auth_script(char *script, int wait)
 {
     char strspeed[32];
     struct passwd *pw;
@@ -2386,7 +2390,10 @@ auth_script(char *script)
     argv[5] = strspeed;
     argv[6] = NULL;
 
-    auth_script_pid = run_program(script, argv, 0, auth_script_done, NULL, 0);
+    if (wait)
+	run_program(script, argv, 0, NULL, NULL, 1);
+    else
+	auth_script_pid = run_program(script, argv, 0, auth_script_done, NULL, 0);
 }
 
 
