@@ -7,7 +7,7 @@ SYSCONF=/etc
 
 # Compile defaults
 CROSS_COMPILE=
-CC=cc
+CC ?= cc
 CFLAGS=
 
 system=`uname -s`
@@ -20,7 +20,7 @@ case $system in
     makext="linux";
     ksrc="linux";
     state="known";
-    CFLAGS="-O2 -g -pipe";;
+    CFLAGS="$(CFLAGS)";;
   SunOS)
     karch=`/usr/bin/isainfo -k`
     case $release in

@@ -9,7 +9,6 @@ LIBDIR = $(DESTDIR)/lib/pppd/$(VERSION)
 VERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' ../../patchlevel.h)
 
 CFLAGS	= $(COPTS) -I../.. -I../../../include -fPIC
-LDFLAGS_SHARED	= -shared
 INSTALL	= install
 
 PLUGIN := pppoatm.so
@@ -34,7 +33,7 @@ endif
 all: $(PLUGIN)
 
 $(PLUGIN): $(PLUGIN_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(LDFLAGS_SHARED) $^ $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 install: all
 	$(INSTALL) -d -m 755 $(LIBDIR)
